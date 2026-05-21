@@ -17,19 +17,21 @@
     <LinearLayout
         android:id="@+id/bottomBar"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="88dp"
         android:gravity="center"
         android:orientation="horizontal"
-        android:background="#CC000000"
+        android:background="@color/bottom_bar_bg"
+        android:elevation="8dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <ImageButton
             android:id="@+id/btnGallery"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginEnd="48dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_marginEnd="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_menu_gallery"
+            android:tint="@color/primary"
             android:contentDescription="Gallery" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -37,11 +39,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@android:drawable/ic_menu_camera"
+            app:backgroundTint="@color/primary"
+            app:tint="@color/white"
+            app:fabSize="large"
             android:contentDescription="Capture" />
 
         <View
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="48dp" />
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_marginStart="40dp" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
