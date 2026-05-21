@@ -56,8 +56,10 @@ dependencies {
     // OpenCV Android
     implementation("org.opencv:opencv:4.9.0")
 
-    // PDF generation
-    implementation("com.itextpdf:itext7-core:7.2.5")
+    // PDF generation (Android-specific iText modules)
+    implementation("com.itextpdf.android:kernel-android:7.2.5")
+    implementation("com.itextpdf.android:layout-android:7.2.5")
+    implementation("com.itextpdf.android:io-android:7.2.5")
 
     // ViewPager2 for multi-page
     implementation("androidx.viewpager2:viewpager2:1.0.0")
