@@ -1,7 +1,6 @@
 package com.ujjawal.docscanner.ui.editor
 
 import android.content.Intent
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -19,9 +18,9 @@ import kotlinx.coroutines.withContext
 class EditorActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityEditorBinding
-    private var currentBitmap: Bitmap? = null
-    private var processedBitmap: Bitmap? = null
-    private val document = DocumentHolder.document
+    private var currentBitmap: android.graphics.Bitmap? = null
+    private var processedBitmap: android.graphics.Bitmap? = null
+    private val document get() = DocumentHolder.document
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,6 +28,7 @@ class EditorActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         currentBitmap = ImageHolder.bitmap ?: run { finish(); return }
+        ImageHolder.bitmap = null // Release reference
 
         processImage()
 
@@ -100,6 +100,7 @@ class EditorActivity : AppCompatActivity() {
             val file = PdfGenerator.generate(this@EditorActivity, bitmaps, document.title)
             withContext(Dispatchers.Main) {
                 Toast.makeText(this@EditorActivity, "PDF saved: ${file.name}", Toast.LENGTH_LONG).show()
+                DocumentHolder.reset() // Clear for next session
                 val intent = Intent(this@EditorActivity, PdfPreviewActivity::class.java)
                 intent.putExtra("pdf_path", file.absolutePath)
                 startActivity(intent)
@@ -109,5 +110,10 @@ class EditorActivity : AppCompatActivity() {
 }
 
 object DocumentHolder {
-    val document = Document()
+    var document = Document()
+        private set
+
+    fun reset() {
+        document = Document()
+    }
 }

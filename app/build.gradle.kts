@@ -53,14 +53,11 @@ dependencies {
     // ML Kit for text recognition (OCR)
     implementation("com.google.mlkit:text-recognition:16.0.0")
 
-    // OpenCV for edge detection & perspective correction
+    // OpenCV Android
     implementation("org.opencv:opencv:4.9.0")
 
     // PDF generation
     implementation("com.itextpdf:itext7-core:7.2.5")
-
-    // Image processing
-    implementation("io.coil-kt:coil:2.5.0")
 
     // ViewPager2 for multi-page
     implementation("androidx.viewpager2:viewpager2:1.0.0")

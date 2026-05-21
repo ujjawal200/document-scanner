@@ -21,10 +21,12 @@ object EdgeDetector {
         Imgproc.dilate(edges, edges, Mat(), Point(-1.0, -1.0), 1)
 
         val contours = mutableListOf<MatOfPoint>()
-        Imgproc.findContours(edges, contours, Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE)
+        val hierarchy = Mat()
+        Imgproc.findContours(edges, contours, hierarchy, Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE)
 
         contours.sortByDescending { Imgproc.contourArea(it) }
 
+        var result: List<PointF>? = null
         for (contour in contours) {
             val approx = MatOfPoint2f()
             val contour2f = MatOfPoint2f(*contour.toArray())
@@ -33,15 +35,18 @@ object EdgeDetector {
 
             if (approx.total() == 4L) {
                 val points = approx.toArray()
-                val sorted = sortCorners(points, bitmap.width.toFloat(), bitmap.height.toFloat())
-                gray.release(); edges.release(); mat.release()
-                return sorted
+                result = sortCorners(points, bitmap.width.toFloat(), bitmap.height.toFloat())
+                approx.release(); contour2f.release()
+                break
             }
+            approx.release(); contour2f.release()
         }
 
-        gray.release(); edges.release(); mat.release()
-        // Default to full image corners
-        return listOf(
+        // Release all contour Mats
+        contours.forEach { it.release() }
+        hierarchy.release(); gray.release(); edges.release(); mat.release()
+
+        return result ?: listOf(
             PointF(0f, 0f),
             PointF(bitmap.width.toFloat(), 0f),
             PointF(bitmap.width.toFloat(), bitmap.height.toFloat()),
@@ -50,7 +55,6 @@ object EdgeDetector {
     }
 
     private fun sortCorners(points: Array<Point>, w: Float, h: Float): List<PointF> {
-        val center = Point(points.map { it.x }.average(), points.map { it.y }.average())
         val topLeft = points.minByOrNull { it.x + it.y }!!
         val topRight = points.minByOrNull { (w - it.x) + it.y }!!
         val bottomRight = points.minByOrNull { (w - it.x) + (h - it.y) }!!

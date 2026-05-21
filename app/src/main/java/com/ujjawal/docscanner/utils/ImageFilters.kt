@@ -19,15 +19,20 @@ object ImageFilters {
             FilterType.GRAYSCALE -> {
                 val gray = Mat()
                 Imgproc.cvtColor(mat, gray, Imgproc.COLOR_BGR2GRAY)
-                gray
+                val rgba = Mat()
+                Imgproc.cvtColor(gray, rgba, Imgproc.COLOR_GRAY2RGBA)
+                gray.release()
+                rgba
             }
             FilterType.BW -> {
                 val gray = Mat()
                 Imgproc.cvtColor(mat, gray, Imgproc.COLOR_BGR2GRAY)
                 val bw = Mat()
                 Imgproc.adaptiveThreshold(gray, bw, 255.0, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 11, 2.0)
-                gray.release()
-                bw
+                val rgba = Mat()
+                Imgproc.cvtColor(bw, rgba, Imgproc.COLOR_GRAY2RGBA)
+                gray.release(); bw.release()
+                rgba
             }
             FilterType.ENHANCED -> {
                 val lab = Mat()
@@ -39,9 +44,11 @@ object ImageFilters {
                 org.opencv.core.Core.merge(channels, lab)
                 val enhanced = Mat()
                 Imgproc.cvtColor(lab, enhanced, Imgproc.COLOR_Lab2BGR)
+                val rgba = Mat()
+                Imgproc.cvtColor(enhanced, rgba, Imgproc.COLOR_BGR2RGBA)
                 channels.forEach { it.release() }
-                lab.release()
-                enhanced
+                lab.release(); enhanced.release()
+                rgba
             }
             else -> mat
         }

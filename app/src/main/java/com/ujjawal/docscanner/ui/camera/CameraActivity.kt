@@ -13,6 +13,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.ujjawal.docscanner.databinding.ActivityCameraBinding
 import com.ujjawal.docscanner.ui.editor.EditorActivity
+import org.opencv.android.OpenCVLoader
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -26,6 +27,10 @@ class CameraActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        if (!OpenCVLoader.initLocal()) {
+            Toast.makeText(this, "OpenCV init failed", Toast.LENGTH_LONG).show()
+        }
 
         cameraExecutor = Executors.newSingleThreadExecutor()
 
