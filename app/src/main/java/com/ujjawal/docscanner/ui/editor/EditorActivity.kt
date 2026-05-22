@@ -195,7 +195,8 @@ class EditorActivity : AppCompatActivity() {
 
         btnCancel.setOnClickListener { dialog.dismiss() }
         btnShare.setOnClickListener {
-            val fileName = etFileName.text.toString().trim().ifBlank { "document_scan" }
+            val rawName = etFileName.text.toString().trim().ifBlank { "document_scan" }
+            val fileName = rawName.replace(Regex("[^a-zA-Z0-9_\\- ]"), "").trim().ifBlank { "document_scan" }
             val asPdf = toggleFormat.checkedButtonId == com.ujjawal.docscanner.R.id.btnPdf
             dialog.dismiss()
             performExport(fileName, asPdf)
