@@ -143,15 +143,84 @@ class EditorActivity : AppCompatActivity() {
             Toast.makeText(this, "No pages to export", Toast.LENGTH_SHORT).show()
             return
         }
+        showShareDialog()
+    }
+
+    private fun showShareDialog() {
+        val dialogView = layoutInflater.inflate(com.ujjawal.docscanner.R.layout.dialog_share, null)
+        val etFileName = dialogView.findViewById<android.widget.EditText>(com.ujjawal.docscanner.R.id.etFileName)
+        val tvFileInfo = dialogView.findViewById<android.widget.TextView>(com.ujjawal.docscanner.R.id.tvFileInfo)
+        val toggleFormat = dialogView.findViewById<com.google.android.material.button.MaterialButtonToggleGroup>(com.ujjawal.docscanner.R.id.toggleFormat)
+        val btnPdf = dialogView.findViewById<com.google.android.material.button.MaterialButton>(com.ujjawal.docscanner.R.id.btnPdf)
+        val btnCancel = dialogView.findViewById<com.google.android.material.button.MaterialButton>(com.ujjawal.docscanner.R.id.btnCancel)
+        val btnShare = dialogView.findViewById<com.google.android.material.button.MaterialButton>(com.ujjawal.docscanner.R.id.btnShare)
+        val btnEditName = dialogView.findViewById<android.widget.ImageButton>(com.ujjawal.docscanner.R.id.btnEditName)
+
+        etFileName.setText(document.title.ifBlank { "document_scan" })
+        tvFileInfo.text = "${document.pages.size} Files"
+        toggleFormat.check(com.ujjawal.docscanner.R.id.btnPdf)
+
+        btnEditName.setOnClickListener {
+            etFileName.requestFocus()
+            etFileName.setSelection(etFileName.text.length)
+        }
+
+        val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setView(dialogView)
+            .create()
+
+        btnCancel.setOnClickListener { dialog.dismiss() }
+        btnShare.setOnClickListener {
+            val fileName = etFileName.text.toString().trim().ifBlank { "document_scan" }
+            val asPdf = toggleFormat.checkedButtonId == com.ujjawal.docscanner.R.id.btnPdf
+            dialog.dismiss()
+            performExport(fileName, asPdf)
+        }
+
+        dialog.show()
+    }
+
+    private fun performExport(fileName: String, asPdf: Boolean) {
         lifecycleScope.launch(Dispatchers.IO) {
             val bitmaps = document.pages.mapNotNull { it.croppedBitmap }
-            val file = PdfGenerator.generate(this@EditorActivity, bitmaps, document.title)
-            withContext(Dispatchers.Main) {
-                Toast.makeText(this@EditorActivity, "PDF saved: ${file.name}", Toast.LENGTH_LONG).show()
-                DocumentHolder.reset() // Clear for next session
-                val intent = Intent(this@EditorActivity, PdfPreviewActivity::class.java)
-                intent.putExtra("pdf_path", file.absolutePath)
-                startActivity(intent)
+            if (asPdf) {
+                val file = PdfGenerator.generate(this@EditorActivity, bitmaps, fileName)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@EditorActivity, "PDF saved: ${file.name}", Toast.LENGTH_LONG).show()
+                    DocumentHolder.reset()
+                    val intent = Intent(this@EditorActivity, PdfPreviewActivity::class.java)
+                    intent.putExtra("pdf_path", file.absolutePath)
+                    startActivity(intent)
+                }
+            } else {
+                // Export as JPEG
+                val dir = File(getExternalFilesDir(null), "Documents/DocScanner")
+                dir.mkdirs()
+                val files = bitmaps.mapIndexed { i, bmp ->
+                    val f = File(dir, "${fileName}_${i + 1}.jpg")
+                    FileOutputStream(f).use { bmp.compress(Bitmap.CompressFormat.JPEG, 90, it) }
+                    f
+                }
+                withContext(Dispatchers.Main) {
+                    DocumentHolder.reset()
+                    if (files.size == 1) {
+                        val uri = androidx.core.content.FileProvider.getUriForFile(this@EditorActivity, "$packageName.fileprovider", files[0])
+                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                            type = "image/jpeg"
+                            putExtra(Intent.EXTRA_STREAM, uri)
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        startActivity(Intent.createChooser(shareIntent, "Share JPEG"))
+                    } else {
+                        val uris = ArrayList(files.map { androidx.core.content.FileProvider.getUriForFile(this@EditorActivity, "$packageName.fileprovider", it) })
+                        val shareIntent = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+                            type = "image/jpeg"
+                            putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        startActivity(Intent.createChooser(shareIntent, "Share JPEGs"))
+                    }
+                }
             }
         }
     }
