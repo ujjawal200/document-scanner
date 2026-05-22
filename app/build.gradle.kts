@@ -13,11 +13,22 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+
+        // Only include ARM libs (most phones). Drops x86/x86_64 = ~50% size reduction
+        ndk {
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
+        }
     }
 
     buildTypes {
+        debug {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
         release {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }

@@ -4,8 +4,11 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -13,6 +16,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.ujjawal.docscanner.databinding.ActivityCameraBinding
 import com.ujjawal.docscanner.ui.editor.EditorActivity
+import com.ujjawal.docscanner.ui.gallery.GalleryActivity
 import org.opencv.android.OpenCVLoader
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -22,6 +26,10 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCameraBinding
     private var imageCapture: ImageCapture? = null
     private lateinit var cameraExecutor: ExecutorService
+
+    private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let { loadImageFromGallery(it) }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +50,26 @@ class CameraActivity : AppCompatActivity() {
 
         binding.btnCapture.setOnClickListener { captureImage() }
         binding.btnGallery.setOnClickListener {
-            startActivity(Intent(this, com.ujjawal.docscanner.ui.gallery.GalleryActivity::class.java))
+            startActivity(Intent(this, GalleryActivity::class.java))
+        }
+        binding.btnImport.setOnClickListener {
+            pickImage.launch("image/*")
+        }
+    }
+
+    private fun loadImageFromGallery(uri: Uri) {
+        try {
+            val inputStream = contentResolver.openInputStream(uri)
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            inputStream?.close()
+            if (bitmap != null) {
+                ImageHolder.bitmap = bitmap
+                startActivity(Intent(this, EditorActivity::class.java))
+            } else {
+                Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
