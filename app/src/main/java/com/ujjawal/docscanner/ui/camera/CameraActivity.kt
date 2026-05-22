@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
@@ -55,6 +56,7 @@ class CameraActivity : AppCompatActivity() {
         binding.btnImport.setOnClickListener {
             pickImage.launch("image/*")
         }
+        binding.btnBack.setOnClickListener { finish() }
     }
 
     private fun loadImageFromGallery(uri: Uri) {
@@ -99,8 +101,17 @@ class CameraActivity : AppCompatActivity() {
         imageCapture.takePicture(ContextCompat.getMainExecutor(this), object : ImageCapture.OnImageCapturedCallback() {
             override fun onCaptureSuccess(imageProxy: ImageProxy) {
                 val bitmap = imageProxy.toBitmap()
+                val rotationDegrees = imageProxy.imageInfo.rotationDegrees
                 imageProxy.close()
-                ImageHolder.bitmap = bitmap
+
+                val correctedBitmap = if (rotationDegrees != 0) {
+                    val matrix = Matrix().apply { postRotate(rotationDegrees.toFloat()) }
+                    Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+                } else {
+                    bitmap
+                }
+
+                ImageHolder.bitmap = correctedBitmap
                 startActivity(Intent(this@CameraActivity, EditorActivity::class.java))
             }
 

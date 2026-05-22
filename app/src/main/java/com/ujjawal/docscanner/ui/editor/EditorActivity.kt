@@ -1,8 +1,11 @@
 package com.ujjawal.docscanner.ui.editor
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.ujjawal.docscanner.databinding.ActivityEditorBinding
@@ -14,13 +17,31 @@ import com.ujjawal.docscanner.utils.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
 
 class EditorActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityEditorBinding
-    private var currentBitmap: android.graphics.Bitmap? = null
-    private var processedBitmap: android.graphics.Bitmap? = null
+    private var currentBitmap: Bitmap? = null
+    private var processedBitmap: Bitmap? = null
     private val document get() = DocumentHolder.document
+
+    private val cropLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            result.data?.data?.let { uri ->
+                try {
+                    val input = contentResolver.openInputStream(uri)
+                    val cropped = android.graphics.BitmapFactory.decodeStream(input)
+                    input?.close()
+                    if (cropped != null) {
+                        processedBitmap = cropped
+                        binding.imagePreview.setImageBitmap(cropped)
+                    }
+                } catch (_: Exception) {}
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,10 +49,12 @@ class EditorActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         currentBitmap = ImageHolder.bitmap ?: run { finish(); return }
-        ImageHolder.bitmap = null // Release reference
+        ImageHolder.bitmap = null
 
         processImage()
 
+        binding.btnBack.setOnClickListener { finish() }
+        binding.btnCrop.setOnClickListener { launchCrop() }
         binding.btnOriginal.setOnClickListener { applyFilter(ImageFilters.FilterType.ORIGINAL) }
         binding.btnGrayscale.setOnClickListener { applyFilter(ImageFilters.FilterType.GRAYSCALE) }
         binding.btnBw.setOnClickListener { applyFilter(ImageFilters.FilterType.BW) }
@@ -40,6 +63,31 @@ class EditorActivity : AppCompatActivity() {
         binding.btnOcr.setOnClickListener { runOcr() }
         binding.btnAddPage.setOnClickListener { addPageAndGoBack() }
         binding.btnExportPdf.setOnClickListener { exportPdf() }
+    }
+
+    private fun launchCrop() {
+        val bitmap = processedBitmap ?: currentBitmap ?: return
+        try {
+            val file = File(cacheDir, "crop_temp.jpg")
+            FileOutputStream(file).use { bitmap.compress(Bitmap.CompressFormat.JPEG, 95, it) }
+            val uri = androidx.core.content.FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
+
+            val intent = Intent("com.android.camera.action.CROP").apply {
+                setDataAndType(uri, "image/*")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                putExtra("crop", "true")
+                putExtra("return-data", false)
+                putExtra(android.provider.MediaStore.EXTRA_OUTPUT, uri)
+                putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString())
+            }
+            if (intent.resolveActivity(packageManager) != null) {
+                cropLauncher.launch(intent)
+            } else {
+                Toast.makeText(this, "No crop app available", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Crop failed: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun processImage() {
