@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
@@ -8,65 +7,23 @@
     <!-- Document shape -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M30,20 L66,20 L78,32 L78,88 L30,88 Z" />
+        android:pathData="M34,24h28l12,12v48c0,2.2 -1.8,4 -4,4H34c-2.2,0 -4,-1.8 -4,-4V28c0,-2.2 1.8,-4 4,-4z" />
 
-    <!-- Document fold corner -->
+    <!-- Folded corner -->
     <path
         android:fillColor="#BBDEFB"
-        android:pathData="M66,20 L66,32 L78,32 Z" />
+        android:pathData="M62,24v12h12z" />
 
-    <!-- Scan line -->
+    <!-- Scan lines on document -->
     <path
-        android:strokeColor="#1565C0"
-        android:strokeWidth="2.5"
-        android:pathData="M26,54 L82,54" />
+        android:fillColor="#1565C0"
+        android:pathData="M38,48h32v2H38zM38,54h32v2H38zM38,60h24v2H38zM38,66h28v2H38z" />
 
-    <!-- Scanner frame corners - top left -->
+    <!-- Camera lens circle -->
     <path
-        android:strokeColor="#1565C0"
-        android:strokeWidth="3"
-        android:strokeLineCap="round"
-        android:fillColor="#00000000"
-        android:pathData="M26,36 L26,26 L36,26" />
-
-    <!-- Scanner frame corners - top right -->
+        android:fillColor="#1565C0"
+        android:pathData="M54,38m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0" />
     <path
-        android:strokeColor="#1565C0"
-        android:strokeWidth="3"
-        android:strokeLineCap="round"
-        android:fillColor="#00000000"
-        android:pathData="M72,26 L82,26 L82,36" />
-
-    <!-- Scanner frame corners - bottom left -->
-    <path
-        android:strokeColor="#1565C0"
-        android:strokeWidth="3"
-        android:strokeLineCap="round"
-        android:fillColor="#00000000"
-        android:pathData="M26,72 L26,82 L36,82" />
-
-    <!-- Scanner frame corners - bottom right -->
-    <path
-        android:strokeColor="#1565C0"
-        android:strokeWidth="3"
-        android:strokeLineCap="round"
-        android:fillColor="#00000000"
-        android:pathData="M72,82 L82,82 L82,72" />
-
-    <!-- Text lines on document -->
-    <path
-        android:strokeColor="#90CAF9"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"
-        android:pathData="M38,42 L70,42" />
-    <path
-        android:strokeColor="#90CAF9"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"
-        android:pathData="M38,62 L70,62" />
-    <path
-        android:strokeColor="#90CAF9"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"
-        android:pathData="M38,72 L58,72" />
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,38m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0" />
 </vector>
