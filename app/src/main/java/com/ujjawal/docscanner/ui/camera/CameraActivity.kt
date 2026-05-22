@@ -8,7 +8,6 @@ import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.net.Uri
 import android.os.Bundle
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -19,7 +18,6 @@ import androidx.core.content.ContextCompat
 import androidx.exifinterface.media.ExifInterface
 import com.ujjawal.docscanner.databinding.ActivityCameraBinding
 import com.ujjawal.docscanner.ui.editor.EditorActivity
-import com.ujjawal.docscanner.ui.gallery.GalleryActivity
 import org.opencv.android.OpenCVLoader
 import java.io.File
 import java.util.concurrent.ExecutorService
@@ -32,7 +30,6 @@ class CameraActivity : AppCompatActivity() {
     private var camera: Camera? = null
     private var flashOn = false
     private lateinit var cameraExecutor: ExecutorService
-    private var selectedTab: TextView? = null
 
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let { loadImageFromGallery(it) }
@@ -57,28 +54,8 @@ class CameraActivity : AppCompatActivity() {
 
         binding.btnCapture.setOnClickListener { captureImage() }
         binding.btnBack.setOnClickListener { finish() }
-        binding.btnImport.setOnClickListener { pickImage.launch("image/*") }
-        binding.btnGallery.setOnClickListener {
-            startActivity(Intent(this, GalleryActivity::class.java))
-        }
+        binding.btnGallery.setOnClickListener { pickImage.launch("image/*") }
         binding.btnFlash.setOnClickListener { toggleFlash() }
-        setupTabs()
-    }
-
-    private fun setupTabs() {
-        val tabs = listOf(binding.tabPhoto, binding.tabIdCard, binding.tabDocument, binding.tabBook, binding.tabQrScan)
-        selectedTab = binding.tabDocument
-        tabs.forEach { tab ->
-            tab.setOnClickListener {
-                selectedTab?.let { prev ->
-                    prev.setTextColor(0xFFAAAAAA.toInt())
-                    prev.setTypeface(null, android.graphics.Typeface.NORMAL)
-                }
-                tab.setTextColor(ContextCompat.getColor(this, com.ujjawal.docscanner.R.color.primary_light))
-                tab.setTypeface(null, android.graphics.Typeface.BOLD)
-                selectedTab = tab
-            }
-        }
     }
 
     private fun toggleFlash() {
@@ -144,7 +121,7 @@ class CameraActivity : AppCompatActivity() {
                 }
 
                 override fun onError(exception: ImageCaptureException) {
-                    Toast.makeText(this@CameraActivity, "Capture failed: ${exception.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@CameraActivity, "Capture failed", Toast.LENGTH_SHORT).show()
                 }
             })
     }

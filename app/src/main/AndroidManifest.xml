@@ -14,7 +14,7 @@
         android:theme="@style/Theme.DocScanner">
 
         <activity
-            android:name=".ui.camera.CameraActivity"
+            android:name=".ui.home.HomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,6 +22,7 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".ui.camera.CameraActivity" />
         <activity android:name=".ui.editor.EditorActivity" />
         <activity android:name=".ui.gallery.GalleryActivity" />
         <activity android:name=".ui.pdf.PdfPreviewActivity" />

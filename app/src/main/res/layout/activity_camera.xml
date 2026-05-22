@@ -10,8 +10,8 @@
         android:id="@+id/viewFinder"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/scanModeTabs"
+        app:layout_constraintTop_toBottomOf="@id/topBar"
+        app:layout_constraintBottom_toTopOf="@id/tabBar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -19,40 +19,43 @@
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="56dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingHorizontal="8dp"
-        android:background="#66000000"
+        android:background="@android:color/black"
+        android:paddingHorizontal="12dp"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageButton
             android:id="@+id/btnBack"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:padding="6dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_revert"
-            android:tint="@color/white"
+            android:src="@drawable/ic_arrow_back"
+            android:scaleType="fitCenter"
             android:contentDescription="Back" />
 
         <ImageButton
             android:id="@+id/btnFlash"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="8dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="16dp"
+            android:padding="6dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/btn_star_big_off"
-            android:tint="@color/white"
+            android:src="@drawable/ic_flash_auto"
+            android:scaleType="fitCenter"
             android:contentDescription="Flash" />
 
         <ImageButton
             android:id="@+id/btnGrid"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="8dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="16dp"
+            android:padding="6dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_dialog_dialer"
-            android:tint="@color/white"
+            android:src="@drawable/ic_grid"
+            android:scaleType="fitCenter"
             android:contentDescription="Grid" />
 
         <View
@@ -62,95 +65,60 @@
 
         <ImageButton
             android:id="@+id/btnGallery"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:padding="6dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_gallery"
-            android:tint="@color/white"
-            android:contentDescription="Gallery" />
+            android:src="@drawable/ic_import_image"
+            android:scaleType="fitCenter"
+            android:contentDescription="Import" />
 
         <ImageButton
             android:id="@+id/btnSettings"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="8dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="16dp"
+            android:padding="6dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_preferences"
-            android:tint="@color/white"
+            android:src="@drawable/ic_settings"
+            android:scaleType="fitCenter"
             android:contentDescription="Settings" />
     </LinearLayout>
 
-    <!-- Scan mode tabs -->
-    <HorizontalScrollView
-        android:id="@+id/scanModeTabs"
+    <!-- Document tab only -->
+    <LinearLayout
+        android:id="@+id/tabBar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:scrollbars="none"
-        android:background="#CC000000"
-        android:paddingVertical="10dp"
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:background="@android:color/black"
         app:layout_constraintBottom_toTopOf="@id/captureBar">
 
-        <LinearLayout
-            android:id="@+id/tabsContainer"
+        <TextView
+            android:id="@+id/tabDocument"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingHorizontal="16dp"
-            android:gravity="center">
+            android:text="Document"
+            android:textColor="@color/primary_light"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 
-            <TextView
-                android:id="@+id/tabPhoto"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Photo"
-                android:textColor="#AAAAAA"
-                android:textSize="14sp"
-                android:paddingHorizontal="16dp" />
-
-            <TextView
-                android:id="@+id/tabIdCard"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="ID Card"
-                android:textColor="#AAAAAA"
-                android:textSize="14sp"
-                android:paddingHorizontal="16dp" />
-
-            <TextView
-                android:id="@+id/tabDocument"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Document"
-                android:textColor="@color/primary_light"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:paddingHorizontal="16dp" />
-
-            <TextView
-                android:id="@+id/tabBook"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Book"
-                android:textColor="#AAAAAA"
-                android:textSize="14sp"
-                android:paddingHorizontal="16dp" />
-
-            <TextView
-                android:id="@+id/tabQrScan"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="QR Scan"
-                android:textColor="#AAAAAA"
-                android:textSize="14sp"
-                android:paddingHorizontal="16dp" />
-        </LinearLayout>
-    </HorizontalScrollView>
+    <!-- Underline indicator -->
+    <View
+        android:layout_width="80dp"
+        android:layout_height="3dp"
+        android:background="@color/primary_light"
+        app:layout_constraintBottom_toBottomOf="@id/tabBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- Capture bar -->
     <LinearLayout
         android:id="@+id/captureBar"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="96dp"
         android:gravity="center"
         android:orientation="horizontal"
         android:background="@android:color/black"
@@ -158,34 +126,33 @@
 
         <ImageButton
             android:id="@+id/btnImport"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginEnd="32dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="40dp"
+            android:padding="8dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_gallery"
+            android:src="@drawable/ic_import_image"
             android:tint="@color/white"
-            android:contentDescription="Import" />
+            android:scaleType="fitCenter"
+            android:contentDescription="Import"
+            android:visibility="invisible" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/btnCapture"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@android:drawable/ic_menu_camera"
+            android:src="@drawable/ic_camera"
             app:backgroundTint="@color/primary"
             app:tint="@color/white"
             app:fabSize="normal"
+            app:elevation="6dp"
             android:contentDescription="Capture" />
 
-        <ImageButton
-            android:id="@+id/btnDone"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="32dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_send"
-            android:tint="@color/white"
-            android:contentDescription="Done"
-            android:visibility="gone" />
+        <View
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="40dp"
+            android:visibility="invisible" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
