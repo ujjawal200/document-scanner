@@ -4,26 +4,13 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Document shape -->
+    <!-- Document outline -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M34,24h28l12,12v48c0,2.2 -1.8,4 -4,4H34c-2.2,0 -4,-1.8 -4,-4V28c0,-2.2 1.8,-4 4,-4z" />
+        android:pathData="M36,22h24l14,14v50c0,2.2 -1.8,4 -4,4H36c-2.2,0 -4,-1.8 -4,-4V26c0,-2.2 1.8,-4 4,-4z" />
 
-    <!-- Folded corner -->
-    <path
-        android:fillColor="#BBDEFB"
-        android:pathData="M62,24v12h12z" />
-
-    <!-- Scan lines on document -->
+    <!-- Scan line -->
     <path
         android:fillColor="#1565C0"
-        android:pathData="M38,48h32v2H38zM38,54h32v2H38zM38,60h24v2H38zM38,66h28v2H38z" />
-
-    <!-- Camera lens circle -->
-    <path
-        android:fillColor="#1565C0"
-        android:pathData="M54,38m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0" />
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M54,38m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0" />
+        android:pathData="M32,56h44v3H32z" />
 </vector>
