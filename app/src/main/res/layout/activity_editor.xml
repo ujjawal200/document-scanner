@@ -24,11 +24,12 @@
             android:contentDescription="Back" />
 
         <TextView
+            android:id="@+id/tvTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
-            android:text="Edit Scan"
+            android:text="Adjust Crop"
             android:textColor="@color/white"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -40,18 +41,40 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_menu_crop"
             android:tint="@color/white"
-            android:contentDescription="Crop" />
+            android:contentDescription="Reset crop" />
     </LinearLayout>
 
-    <!-- Preview -->
-    <ImageView
-        android:id="@+id/imagePreview"
+    <!-- Image + crop overlay -->
+    <FrameLayout
+        android:id="@+id/cropContainer"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:scaleType="fitCenter"
-        android:background="@color/surface_variant"
-        android:contentDescription="Scanned preview" />
+        android:background="@color/surface_variant">
+
+        <ImageView
+            android:id="@+id/imagePreview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            android:contentDescription="Scanned preview" />
+
+        <com.ujjawal.docscanner.ui.editor.CropOverlayView
+            android:id="@+id/cropOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+
+    <!-- Confirm crop button (visible during crop mode) -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnConfirmCrop"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginVertical="8dp"
+        app:backgroundTint="@color/primary"
+        android:textColor="@color/white"
+        android:text="Confirm Crop" />
 
     <!-- OCR result -->
     <TextView
@@ -66,13 +89,15 @@
         android:textColor="@color/on_surface"
         android:visibility="gone" />
 
-    <!-- Filter buttons -->
+    <!-- Filter buttons (hidden during crop mode) -->
     <HorizontalScrollView
+        android:id="@+id/filterBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/surface"
         android:paddingVertical="8dp"
-        android:paddingHorizontal="12dp">
+        android:paddingHorizontal="12dp"
+        android:visibility="gone">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -112,15 +137,17 @@
         </LinearLayout>
     </HorizontalScrollView>
 
-    <!-- Action buttons -->
+    <!-- Action buttons (hidden during crop mode) -->
     <LinearLayout
+        android:id="@+id/actionBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="12dp"
         android:background="@color/bottom_bar_bg"
         android:elevation="4dp"
-        android:gravity="center">
+        android:gravity="center"
+        android:visibility="gone">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnOcr"
@@ -149,6 +176,6 @@
             android:layout_weight="1"
             app:backgroundTint="@color/primary"
             android:textColor="@color/white"
-            android:text="Export PDF" />
+            android:text="Export" />
     </LinearLayout>
 </LinearLayout>

@@ -2,10 +2,10 @@ package com.ujjawal.docscanner.ui.editor
 
 import android.content.Intent
 import android.graphics.Bitmap
-import android.net.Uri
+import android.graphics.PointF
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.ujjawal.docscanner.databinding.ActivityEditorBinding
@@ -23,38 +23,26 @@ import java.io.FileOutputStream
 class EditorActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityEditorBinding
-    private var currentBitmap: Bitmap? = null
+    private var originalBitmap: Bitmap? = null
     private var processedBitmap: Bitmap? = null
     private val document get() = DocumentHolder.document
-
-    private val cropLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK) {
-            result.data?.data?.let { uri ->
-                try {
-                    val input = contentResolver.openInputStream(uri)
-                    val cropped = android.graphics.BitmapFactory.decodeStream(input)
-                    input?.close()
-                    if (cropped != null) {
-                        processedBitmap = cropped
-                        binding.imagePreview.setImageBitmap(cropped)
-                    }
-                } catch (_: Exception) {}
-            }
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityEditorBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        currentBitmap = ImageHolder.bitmap ?: run { finish(); return }
+        originalBitmap = ImageHolder.bitmap ?: run { finish(); return }
         ImageHolder.bitmap = null
 
-        processImage()
+        // Show original image and detect edges for crop overlay
+        binding.imagePreview.setImageBitmap(originalBitmap)
+        showCropMode()
 
         binding.btnBack.setOnClickListener { finish() }
-        binding.btnCrop.setOnClickListener { launchCrop() }
+        binding.btnCrop.setOnClickListener { resetCrop() }
+        binding.btnConfirmCrop.setOnClickListener { applyCrop() }
+
         binding.btnOriginal.setOnClickListener { applyFilter(ImageFilters.FilterType.ORIGINAL) }
         binding.btnGrayscale.setOnClickListener { applyFilter(ImageFilters.FilterType.GRAYSCALE) }
         binding.btnBw.setOnClickListener { applyFilter(ImageFilters.FilterType.BW) }
@@ -65,46 +53,83 @@ class EditorActivity : AppCompatActivity() {
         binding.btnExportPdf.setOnClickListener { exportPdf() }
     }
 
-    private fun launchCrop() {
-        val bitmap = processedBitmap ?: currentBitmap ?: return
-        try {
-            val file = File(cacheDir, "crop_temp.jpg")
-            FileOutputStream(file).use { bitmap.compress(Bitmap.CompressFormat.JPEG, 95, it) }
-            val uri = androidx.core.content.FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
+    private fun showCropMode() {
+        binding.tvTitle.text = "Adjust Crop"
+        binding.cropOverlay.visibility = View.VISIBLE
+        binding.btnConfirmCrop.visibility = View.VISIBLE
+        binding.filterBar.visibility = View.GONE
+        binding.actionBar.visibility = View.GONE
 
-            val intent = Intent("com.android.camera.action.CROP").apply {
-                setDataAndType(uri, "image/*")
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-                putExtra("crop", "true")
-                putExtra("return-data", false)
-                putExtra(android.provider.MediaStore.EXTRA_OUTPUT, uri)
-                putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString())
+        // Detect edges and set corners on overlay after layout
+        binding.cropOverlay.post {
+            lifecycleScope.launch(Dispatchers.Default) {
+                val bitmap = originalBitmap!!
+                val corners = EdgeDetector.detectEdges(bitmap)
+
+                // Scale corners from bitmap coords to overlay view coords
+                val overlayW = binding.cropOverlay.width.toFloat()
+                val overlayH = binding.cropOverlay.height.toFloat()
+
+                // Calculate the fitCenter scaling used by ImageView
+                val scaleX = overlayW / bitmap.width
+                val scaleY = overlayH / bitmap.height
+                val scale = minOf(scaleX, scaleY)
+                val offsetX = (overlayW - bitmap.width * scale) / 2f
+                val offsetY = (overlayH - bitmap.height * scale) / 2f
+
+                val scaled = corners.map { pt ->
+                    PointF(pt.x * scale + offsetX, pt.y * scale + offsetY)
+                }
+
+                withContext(Dispatchers.Main) {
+                    binding.cropOverlay.setCorners(scaled)
+                }
             }
-            if (intent.resolveActivity(packageManager) != null) {
-                cropLauncher.launch(intent)
-            } else {
-                Toast.makeText(this, "No crop app available", Toast.LENGTH_SHORT).show()
-            }
-        } catch (e: Exception) {
-            Toast.makeText(this, "Crop failed: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun processImage() {
+    private fun resetCrop() {
+        binding.cropOverlay.setDefaultCorners()
+    }
+
+    private fun applyCrop() {
+        val bitmap = originalBitmap ?: return
+
         lifecycleScope.launch(Dispatchers.Default) {
-            val bitmap = currentBitmap!!
-            val corners = EdgeDetector.detectEdges(bitmap)
-            val cropped = PerspectiveTransform.transform(bitmap, corners)
+            // Convert overlay corners back to bitmap coordinates
+            val overlayW = binding.cropOverlay.width.toFloat()
+            val overlayH = binding.cropOverlay.height.toFloat()
+            val scaleX = overlayW / bitmap.width
+            val scaleY = overlayH / bitmap.height
+            val scale = minOf(scaleX, scaleY)
+            val offsetX = (overlayW - bitmap.width * scale) / 2f
+            val offsetY = (overlayH - bitmap.height * scale) / 2f
+
+            val viewCorners = binding.cropOverlay.getCorners()
+            val bitmapCorners = viewCorners.map { pt ->
+                PointF((pt.x - offsetX) / scale, (pt.y - offsetY) / scale)
+            }
+
+            val cropped = PerspectiveTransform.transform(bitmap, bitmapCorners)
             processedBitmap = cropped
 
             withContext(Dispatchers.Main) {
                 binding.imagePreview.setImageBitmap(cropped)
+                showEditMode()
             }
         }
     }
 
+    private fun showEditMode() {
+        binding.tvTitle.text = "Edit Scan"
+        binding.cropOverlay.visibility = View.GONE
+        binding.btnConfirmCrop.visibility = View.GONE
+        binding.filterBar.visibility = View.VISIBLE
+        binding.actionBar.visibility = View.VISIBLE
+    }
+
     private fun applyFilter(filter: ImageFilters.FilterType) {
-        val source = processedBitmap ?: currentBitmap ?: return
+        val source = processedBitmap ?: originalBitmap ?: return
         lifecycleScope.launch(Dispatchers.Default) {
             val filtered = ImageFilters.apply(source, filter)
             withContext(Dispatchers.Main) {
@@ -120,7 +145,7 @@ class EditorActivity : AppCompatActivity() {
             val text = withContext(Dispatchers.Default) { OcrEngine.extractText(bitmap) }
             if (text.isNotBlank()) {
                 binding.txtOcrResult.text = text
-                binding.txtOcrResult.visibility = android.view.View.VISIBLE
+                binding.txtOcrResult.visibility = View.VISIBLE
             } else {
                 Toast.makeText(this@EditorActivity, "No text detected", Toast.LENGTH_SHORT).show()
             }
@@ -129,7 +154,7 @@ class EditorActivity : AppCompatActivity() {
 
     private fun addPageAndGoBack() {
         processedBitmap?.let {
-            document.pages.add(ScannedPage(currentBitmap!!, croppedBitmap = it))
+            document.pages.add(ScannedPage(originalBitmap!!, croppedBitmap = it))
             Toast.makeText(this, "Page ${document.pages.size} added", Toast.LENGTH_SHORT).show()
         }
         finish()
@@ -137,7 +162,7 @@ class EditorActivity : AppCompatActivity() {
 
     private fun exportPdf() {
         processedBitmap?.let {
-            document.pages.add(ScannedPage(currentBitmap!!, croppedBitmap = it))
+            document.pages.add(ScannedPage(originalBitmap!!, croppedBitmap = it))
         }
         if (document.pages.isEmpty()) {
             Toast.makeText(this, "No pages to export", Toast.LENGTH_SHORT).show()
@@ -151,7 +176,6 @@ class EditorActivity : AppCompatActivity() {
         val etFileName = dialogView.findViewById<android.widget.EditText>(com.ujjawal.docscanner.R.id.etFileName)
         val tvFileInfo = dialogView.findViewById<android.widget.TextView>(com.ujjawal.docscanner.R.id.tvFileInfo)
         val toggleFormat = dialogView.findViewById<com.google.android.material.button.MaterialButtonToggleGroup>(com.ujjawal.docscanner.R.id.toggleFormat)
-        val btnPdf = dialogView.findViewById<com.google.android.material.button.MaterialButton>(com.ujjawal.docscanner.R.id.btnPdf)
         val btnCancel = dialogView.findViewById<com.google.android.material.button.MaterialButton>(com.ujjawal.docscanner.R.id.btnCancel)
         val btnShare = dialogView.findViewById<com.google.android.material.button.MaterialButton>(com.ujjawal.docscanner.R.id.btnShare)
         val btnEditName = dialogView.findViewById<android.widget.ImageButton>(com.ujjawal.docscanner.R.id.btnEditName)
@@ -176,7 +200,6 @@ class EditorActivity : AppCompatActivity() {
             dialog.dismiss()
             performExport(fileName, asPdf)
         }
-
         dialog.show()
     }
 
@@ -193,7 +216,6 @@ class EditorActivity : AppCompatActivity() {
                     startActivity(intent)
                 }
             } else {
-                // Export as JPEG
                 val dir = File(getExternalFilesDir(null), "Documents/DocScanner")
                 dir.mkdirs()
                 val files = bitmaps.mapIndexed { i, bmp ->
@@ -203,23 +225,23 @@ class EditorActivity : AppCompatActivity() {
                 }
                 withContext(Dispatchers.Main) {
                     DocumentHolder.reset()
-                    if (files.size == 1) {
-                        val uri = androidx.core.content.FileProvider.getUriForFile(this@EditorActivity, "$packageName.fileprovider", files[0])
-                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    val uris = ArrayList(files.map {
+                        androidx.core.content.FileProvider.getUriForFile(this@EditorActivity, "$packageName.fileprovider", it)
+                    })
+                    val shareIntent = if (files.size == 1) {
+                        Intent(Intent.ACTION_SEND).apply {
                             type = "image/jpeg"
-                            putExtra(Intent.EXTRA_STREAM, uri)
+                            putExtra(Intent.EXTRA_STREAM, uris[0])
                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         }
-                        startActivity(Intent.createChooser(shareIntent, "Share JPEG"))
                     } else {
-                        val uris = ArrayList(files.map { androidx.core.content.FileProvider.getUriForFile(this@EditorActivity, "$packageName.fileprovider", it) })
-                        val shareIntent = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+                        Intent(Intent.ACTION_SEND_MULTIPLE).apply {
                             type = "image/jpeg"
                             putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         }
-                        startActivity(Intent.createChooser(shareIntent, "Share JPEGs"))
                     }
+                    startActivity(Intent.createChooser(shareIntent, "Share"))
                 }
             }
         }

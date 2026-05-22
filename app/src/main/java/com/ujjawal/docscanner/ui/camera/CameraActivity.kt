@@ -6,7 +6,6 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
-import android.graphics.PointF
 import android.net.Uri
 import android.os.Bundle
 import android.widget.TextView
@@ -17,11 +16,12 @@ import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.exifinterface.media.ExifInterface
 import com.ujjawal.docscanner.databinding.ActivityCameraBinding
 import com.ujjawal.docscanner.ui.editor.EditorActivity
 import com.ujjawal.docscanner.ui.gallery.GalleryActivity
-import com.ujjawal.docscanner.utils.EdgeDetector
 import org.opencv.android.OpenCVLoader
+import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -62,8 +62,6 @@ class CameraActivity : AppCompatActivity() {
             startActivity(Intent(this, GalleryActivity::class.java))
         }
         binding.btnFlash.setOnClickListener { toggleFlash() }
-
-        // Scan mode tabs
         setupTabs()
     }
 
@@ -96,6 +94,8 @@ class CameraActivity : AppCompatActivity() {
             if (bitmap != null) {
                 ImageHolder.bitmap = bitmap
                 startActivity(Intent(this, EditorActivity::class.java))
+            } else {
+                Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()
             }
         } catch (e: Exception) {
             Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -113,18 +113,10 @@ class CameraActivity : AppCompatActivity() {
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
                 .build()
 
-            val imageAnalysis = ImageAnalysis.Builder()
-                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                .build()
-
-            imageAnalysis.setAnalyzer(cameraExecutor) { imageProxy ->
-                analyzeFrame(imageProxy)
-            }
-
             try {
                 cameraProvider.unbindAll()
                 camera = cameraProvider.bindToLifecycle(
-                    this, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageCapture, imageAnalysis
+                    this, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageCapture
                 )
             } catch (e: Exception) {
                 Toast.makeText(this, "Camera init failed", Toast.LENGTH_SHORT).show()
@@ -132,55 +124,44 @@ class CameraActivity : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun analyzeFrame(imageProxy: ImageProxy) {
-        try {
-            val bitmap = imageProxy.toBitmap()
-            val rotation = imageProxy.imageInfo.rotationDegrees
-            val corrected = if (rotation != 0) {
-                val matrix = Matrix().apply { postRotate(rotation.toFloat()) }
-                Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-            } else bitmap
-
-            val corners = EdgeDetector.detectEdges(corrected)
-
-            // Scale corners to overlay dimensions
-            val overlayW = binding.edgeOverlay.width.toFloat()
-            val overlayH = binding.edgeOverlay.height.toFloat()
-            if (overlayW > 0 && overlayH > 0) {
-                val scaleX = overlayW / corrected.width
-                val scaleY = overlayH / corrected.height
-                val scaled = corners.map { PointF(it.x * scaleX, it.y * scaleY) }.toTypedArray()
-                runOnUiThread { binding.edgeOverlay.setCorners(scaled) }
-            }
-        } catch (_: Exception) {
-            runOnUiThread { binding.edgeOverlay.setCorners(null) }
-        } finally {
-            imageProxy.close()
-        }
-    }
-
     private fun captureImage() {
         val imageCapture = imageCapture ?: return
 
-        imageCapture.takePicture(ContextCompat.getMainExecutor(this), object : ImageCapture.OnImageCapturedCallback() {
-            override fun onCaptureSuccess(imageProxy: ImageProxy) {
-                val bitmap = imageProxy.toBitmap()
-                val rotationDegrees = imageProxy.imageInfo.rotationDegrees
-                imageProxy.close()
+        val photoFile = File(cacheDir, "capture_${System.currentTimeMillis()}.jpg")
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
-                val correctedBitmap = if (rotationDegrees != 0) {
-                    val matrix = Matrix().apply { postRotate(rotationDegrees.toFloat()) }
-                    Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-                } else bitmap
+        imageCapture.takePicture(outputOptions, ContextCompat.getMainExecutor(this),
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                    val bitmap = loadBitmapWithRotation(photoFile)
+                    if (bitmap != null) {
+                        ImageHolder.bitmap = bitmap
+                        startActivity(Intent(this@CameraActivity, EditorActivity::class.java))
+                    } else {
+                        Toast.makeText(this@CameraActivity, "Failed to load captured image", Toast.LENGTH_SHORT).show()
+                    }
+                    photoFile.delete()
+                }
 
-                ImageHolder.bitmap = correctedBitmap
-                startActivity(Intent(this@CameraActivity, EditorActivity::class.java))
-            }
+                override fun onError(exception: ImageCaptureException) {
+                    Toast.makeText(this@CameraActivity, "Capture failed: ${exception.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
+    }
 
-            override fun onError(exception: ImageCaptureException) {
-                Toast.makeText(this@CameraActivity, "Capture failed", Toast.LENGTH_SHORT).show()
-            }
-        })
+    private fun loadBitmapWithRotation(file: File): Bitmap? {
+        val bitmap = BitmapFactory.decodeFile(file.absolutePath) ?: return null
+        val exif = ExifInterface(file.absolutePath)
+        val rotation = when (exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> 90f
+            ExifInterface.ORIENTATION_ROTATE_180 -> 180f
+            ExifInterface.ORIENTATION_ROTATE_270 -> 270f
+            else -> 0f
+        }
+        return if (rotation != 0f) {
+            val matrix = Matrix().apply { postRotate(rotation) }
+            Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        } else bitmap
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
