@@ -183,7 +183,7 @@
             android:src="@android:drawable/ic_menu_camera"
             app:backgroundTint="@color/primary"
             app:tint="@color/white"
-            app:fabSize="large"
+            app:fabSize="normal"
             android:contentDescription="Capture" />
 
         <ImageButton
