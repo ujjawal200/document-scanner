@@ -3,6 +3,10 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 android {
     namespace = "com.ujjawal.docscanner"
     compileSdk = 34
@@ -75,6 +79,10 @@ dependencies {
 
     // ViewPager2 for multi-page
     implementation("androidx.viewpager2:viewpager2:1.0.0")
+
+    // Firebase Analytics
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation("com.google.firebase:firebase-analytics-ktx")
 
     // Testing
     testImplementation("junit:junit:4.13.2")

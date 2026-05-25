@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.exifinterface.media.ExifInterface
 import com.ujjawal.docscanner.databinding.ActivityCameraBinding
 import com.ujjawal.docscanner.ui.editor.EditorActivity
+import com.ujjawal.docscanner.utils.AnalyticsHelper
 import org.opencv.android.OpenCVLoader
 import java.io.File
 import java.util.concurrent.ExecutorService
@@ -73,6 +74,7 @@ class CameraActivity : AppCompatActivity() {
             inputStream?.close()
             if (bitmap != null) {
                 ImageHolder.bitmap = bitmap
+                AnalyticsHelper.logScanCompleted("gallery", 1)
                 startActivity(Intent(this, EditorActivity::class.java))
             } else {
                 Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()
@@ -116,6 +118,7 @@ class CameraActivity : AppCompatActivity() {
                     val bitmap = loadBitmapWithRotation(photoFile)
                     if (bitmap != null) {
                         ImageHolder.bitmap = bitmap
+                        AnalyticsHelper.logScanCompleted("camera", 1)
                         startActivity(Intent(this@CameraActivity, EditorActivity::class.java))
                     } else {
                         Toast.makeText(this@CameraActivity, "Failed to load captured image", Toast.LENGTH_SHORT).show()

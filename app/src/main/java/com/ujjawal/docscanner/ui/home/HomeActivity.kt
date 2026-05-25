@@ -19,6 +19,7 @@ import com.ujjawal.docscanner.R
 import com.ujjawal.docscanner.databinding.ActivityHomeBinding
 import com.ujjawal.docscanner.ui.camera.CameraActivity
 import com.ujjawal.docscanner.ui.pdf.PdfPreviewActivity
+import com.ujjawal.docscanner.utils.AnalyticsHelper
 import com.ujjawal.docscanner.utils.AppPrefs
 import java.io.File
 import java.text.SimpleDateFormat
@@ -34,6 +35,9 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        AnalyticsHelper.init(this)
+        AnalyticsHelper.logScreenView("home")
 
         binding.fabCamera.setOnClickListener {
             startActivity(Intent(this, CameraActivity::class.java))

@@ -116,6 +116,7 @@ class EditorActivity : AppCompatActivity() {
             processedBitmap = cropped
 
             withContext(Dispatchers.Main) {
+                AnalyticsHelper.logCropManual()
                 binding.imagePreview.setImageBitmap(cropped)
                 showEditMode()
             }
@@ -144,6 +145,7 @@ class EditorActivity : AppCompatActivity() {
 
     private fun applyFilter(filter: ImageFilters.FilterType) {
         val source = croppedBitmap ?: originalBitmap ?: return
+        AnalyticsHelper.logFilterApplied(filter.name.lowercase())
         lifecycleScope.launch(Dispatchers.Default) {
             val filtered = ImageFilters.apply(source, filter)
             withContext(Dispatchers.Main) {
@@ -158,6 +160,7 @@ class EditorActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val text = withContext(Dispatchers.Default) { OcrEngine.extractText(bitmap) }
             if (text.isNotBlank()) {
+                AnalyticsHelper.logOcrUsed(text.length)
                 binding.txtOcrResult.text = text
                 binding.txtOcrResult.visibility = View.VISIBLE
             } else {
@@ -225,6 +228,7 @@ class EditorActivity : AppCompatActivity() {
             if (asPdf) {
                 val file = PdfGenerator.generate(this@EditorActivity, bitmaps, fileName)
                 withContext(Dispatchers.Main) {
+                    AnalyticsHelper.logExportCompleted("pdf", bitmaps.size)
                     Toast.makeText(this@EditorActivity, "PDF saved: ${file.name}", Toast.LENGTH_LONG).show()
                     DocumentHolder.reset()
                     val intent = Intent(this@EditorActivity, PdfPreviewActivity::class.java)
@@ -240,6 +244,7 @@ class EditorActivity : AppCompatActivity() {
                     f
                 }
                 withContext(Dispatchers.Main) {
+                    AnalyticsHelper.logExportCompleted("jpeg", files.size)
                     DocumentHolder.reset()
                     val uris = ArrayList(files.map {
                         androidx.core.content.FileProvider.getUriForFile(this@EditorActivity, "$packageName.fileprovider", it)

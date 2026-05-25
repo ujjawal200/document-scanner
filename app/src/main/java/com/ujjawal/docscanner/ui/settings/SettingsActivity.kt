@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.ujjawal.docscanner.R
 import com.ujjawal.docscanner.databinding.ActivitySettingsBinding
+import com.ujjawal.docscanner.utils.AnalyticsHelper
 import com.ujjawal.docscanner.utils.AppPrefs
 
 class SettingsActivity : AppCompatActivity() {
@@ -32,9 +33,11 @@ class SettingsActivity : AppCompatActivity() {
         // Listeners
         binding.switchFocusSound.setOnCheckedChangeListener { _, checked ->
             AppPrefs.setFocusSound(this, checked)
+            AnalyticsHelper.logSettingsChanged("focus_sound", checked.toString())
         }
         binding.switchCaptureSound.setOnCheckedChangeListener { _, checked ->
             AppPrefs.setCaptureSound(this, checked)
+            AnalyticsHelper.logSettingsChanged("capture_sound", checked.toString())
         }
         binding.toggleColorFilter.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
@@ -45,6 +48,7 @@ class SettingsActivity : AppCompatActivity() {
                     else -> "ORIGINAL"
                 }
                 AppPrefs.setColorFilter(this, filter)
+                AnalyticsHelper.logSettingsChanged("color_filter", filter)
             }
         }
     }
