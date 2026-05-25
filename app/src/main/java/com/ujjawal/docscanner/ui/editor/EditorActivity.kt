@@ -279,7 +279,7 @@ class EditorActivity : AppCompatActivity() {
     }
 
     private fun loadInterstitial() {
-        InterstitialAd.load(this, "ca-app-pub-9622284213373884/7671729192",
+        InterstitialAd.load(this, "ca-app-pub-3940256099942544/1033173712", // TEST - real: ca-app-pub-9622284213373884/7671729192
             AdRequest.Builder().build(), object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(ad: InterstitialAd) { interstitialAd = ad }
                 override fun onAdFailedToLoad(error: LoadAdError) { interstitialAd = null }

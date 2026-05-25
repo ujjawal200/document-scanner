@@ -62,7 +62,7 @@ class HomeActivity : AppCompatActivity() {
     private fun setupBannerAd() {
         val adView = AdView(this).apply {
             setAdSize(AdSize.BANNER)
-            adUnitId = "ca-app-pub-9622284213373884/2255750981"
+            adUnitId = "ca-app-pub-3940256099942544/6300978111" // TEST - real: ca-app-pub-9622284213373884/2255750981
         }
         binding.adContainer.addView(adView)
         adView.loadAd(AdRequest.Builder().build())
