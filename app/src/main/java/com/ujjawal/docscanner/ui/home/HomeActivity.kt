@@ -21,6 +21,10 @@ import com.ujjawal.docscanner.ui.camera.CameraActivity
 import com.ujjawal.docscanner.ui.pdf.PdfPreviewActivity
 import com.ujjawal.docscanner.utils.AnalyticsHelper
 import com.ujjawal.docscanner.utils.AppPrefs
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -39,6 +43,9 @@ class HomeActivity : AppCompatActivity() {
         AnalyticsHelper.init(this)
         AnalyticsHelper.logScreenView("home")
 
+        MobileAds.initialize(this) {}
+        setupBannerAd()
+
         binding.fabCamera.setOnClickListener {
             startActivity(Intent(this, CameraActivity::class.java))
         }
@@ -50,6 +57,15 @@ class HomeActivity : AppCompatActivity() {
         super.onResume()
         exitMultiSelect()
         loadDocuments()
+    }
+
+    private fun setupBannerAd() {
+        val adView = AdView(this).apply {
+            setAdSize(AdSize.BANNER)
+            adUnitId = "ca-app-pub-9622284213373884/2255750981"
+        }
+        binding.adContainer.addView(adView)
+        adView.loadAd(AdRequest.Builder().build())
     }
 
     private fun setupMenu() {

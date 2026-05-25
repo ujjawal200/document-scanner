@@ -17,3 +17,7 @@
 
 # Keep ViewBinding
 -keep class com.ujjawal.docscanner.databinding.** { *; }
+
+# Keep Google Ads
+-keep class com.google.android.gms.ads.** { *; }
+-dontwarn com.google.android.gms.ads.**

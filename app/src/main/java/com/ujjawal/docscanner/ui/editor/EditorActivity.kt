@@ -14,6 +14,11 @@ import com.ujjawal.docscanner.model.ScannedPage
 import com.ujjawal.docscanner.ui.camera.ImageHolder
 import com.ujjawal.docscanner.ui.pdf.PdfPreviewActivity
 import com.ujjawal.docscanner.utils.*
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.FullScreenContentCallback
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -26,12 +31,15 @@ class EditorActivity : AppCompatActivity() {
     private var originalBitmap: Bitmap? = null
     private var croppedBitmap: Bitmap? = null
     private var processedBitmap: Bitmap? = null
+    private var interstitialAd: InterstitialAd? = null
     private val document get() = DocumentHolder.document
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityEditorBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        loadInterstitial()
 
         originalBitmap = ImageHolder.bitmap ?: run { finish(); return }
         ImageHolder.bitmap = null
@@ -229,6 +237,7 @@ class EditorActivity : AppCompatActivity() {
                 val file = PdfGenerator.generate(this@EditorActivity, bitmaps, fileName)
                 withContext(Dispatchers.Main) {
                     AnalyticsHelper.logExportCompleted("pdf", bitmaps.size)
+                    showInterstitial()
                     Toast.makeText(this@EditorActivity, "PDF saved: ${file.name}", Toast.LENGTH_LONG).show()
                     DocumentHolder.reset()
                     val intent = Intent(this@EditorActivity, PdfPreviewActivity::class.java)
@@ -245,6 +254,7 @@ class EditorActivity : AppCompatActivity() {
                 }
                 withContext(Dispatchers.Main) {
                     AnalyticsHelper.logExportCompleted("jpeg", files.size)
+                    showInterstitial()
                     DocumentHolder.reset()
                     val uris = ArrayList(files.map {
                         androidx.core.content.FileProvider.getUriForFile(this@EditorActivity, "$packageName.fileprovider", it)
@@ -265,6 +275,23 @@ class EditorActivity : AppCompatActivity() {
                     startActivity(Intent.createChooser(shareIntent, "Share"))
                 }
             }
+        }
+    }
+
+    private fun loadInterstitial() {
+        InterstitialAd.load(this, "ca-app-pub-9622284213373884/7671729192",
+            AdRequest.Builder().build(), object : InterstitialAdLoadCallback() {
+                override fun onAdLoaded(ad: InterstitialAd) { interstitialAd = ad }
+                override fun onAdFailedToLoad(error: LoadAdError) { interstitialAd = null }
+            })
+    }
+
+    private fun showInterstitial() {
+        interstitialAd?.let { ad ->
+            ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+                override fun onAdDismissedFullScreenContent() { interstitialAd = null }
+            }
+            ad.show(this)
         }
     }
 }

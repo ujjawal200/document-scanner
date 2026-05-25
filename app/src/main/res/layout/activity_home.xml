@@ -65,13 +65,21 @@
             android:textColor="@color/divider" />
     </LinearLayout>
 
+    <!-- Banner Ad -->
+    <FrameLayout
+        android:id="@+id/adContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom" />
+
     <!-- FAB -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabCamera"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="74dp"
         android:src="@drawable/ic_camera"
         app:backgroundTint="@color/primary"
         app:tint="@color/white"
