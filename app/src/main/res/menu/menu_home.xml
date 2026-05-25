@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_view_mode"
+        android:title="View Mode"
+        app:showAsAction="never">
+        <menu>
+            <group android:id="@+id/group_view_mode" android:checkableBehavior="single">
+                <item android:id="@+id/menu_view_list" android:title="List" />
+                <item android:id="@+id/menu_view_grid" android:title="Grid" />
+            </group>
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/menu_select"
+        android:title="Select Multiple"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_delete_selected"
+        android:title="Delete Selected"
+        app:showAsAction="never"
+        android:visible="false" />
+
+    <item
+        android:id="@+id/menu_share_selected"
+        android:title="Share Selected"
+        app:showAsAction="never"
+        android:visible="false" />
+
+    <item
+        android:id="@+id/menu_sort"
+        android:title="Sort By"
+        app:showAsAction="never">
+        <menu>
+            <group android:id="@+id/group_sort" android:checkableBehavior="single">
+                <item android:id="@+id/menu_sort_date_added" android:title="Date Added" />
+                <item android:id="@+id/menu_sort_name" android:title="Name" />
+                <item android:id="@+id/menu_sort_date_modified" android:title="Date Modified" />
+            </group>
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/menu_export_format"
+        android:title="Default Export"
+        app:showAsAction="never">
+        <menu>
+            <group android:id="@+id/group_export" android:checkableBehavior="single">
+                <item android:id="@+id/menu_export_pdf" android:title="PDF" />
+                <item android:id="@+id/menu_export_jpeg" android:title="JPEG" />
+            </group>
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/menu_about"
+        android:title="About"
+        app:showAsAction="never" />
+</menu>

@@ -56,6 +56,9 @@ class CameraActivity : AppCompatActivity() {
         binding.btnBack.setOnClickListener { finish() }
         binding.btnGallery.setOnClickListener { pickImage.launch("image/*") }
         binding.btnFlash.setOnClickListener { toggleFlash() }
+        binding.btnSettings.setOnClickListener {
+            startActivity(Intent(this, com.ujjawal.docscanner.ui.settings.SettingsActivity::class.java))
+        }
     }
 
     private fun toggleFlash() {

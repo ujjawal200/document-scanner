@@ -24,6 +24,7 @@ class EditorActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityEditorBinding
     private var originalBitmap: Bitmap? = null
+    private var croppedBitmap: Bitmap? = null
     private var processedBitmap: Bitmap? = null
     private val document get() = DocumentHolder.document
 
@@ -111,6 +112,7 @@ class EditorActivity : AppCompatActivity() {
             }
 
             val cropped = PerspectiveTransform.transform(bitmap, bitmapCorners)
+            croppedBitmap = cropped
             processedBitmap = cropped
 
             withContext(Dispatchers.Main) {
@@ -126,10 +128,22 @@ class EditorActivity : AppCompatActivity() {
         binding.btnConfirmCrop.visibility = View.GONE
         binding.filterBar.visibility = View.VISIBLE
         binding.actionBar.visibility = View.VISIBLE
+
+        // Auto-apply default color filter from settings
+        val defaultFilter = AppPrefs.getColorFilter(this)
+        if (defaultFilter != "ORIGINAL") {
+            val filterType = when (defaultFilter) {
+                "GRAYSCALE" -> ImageFilters.FilterType.GRAYSCALE
+                "BW" -> ImageFilters.FilterType.BW
+                "ENHANCED" -> ImageFilters.FilterType.ENHANCED
+                else -> null
+            }
+            filterType?.let { applyFilter(it) }
+        }
     }
 
     private fun applyFilter(filter: ImageFilters.FilterType) {
-        val source = processedBitmap ?: originalBitmap ?: return
+        val source = croppedBitmap ?: originalBitmap ?: return
         lifecycleScope.launch(Dispatchers.Default) {
             val filtered = ImageFilters.apply(source, filter)
             withContext(Dispatchers.Main) {
@@ -182,7 +196,8 @@ class EditorActivity : AppCompatActivity() {
 
         etFileName.setText(document.title.ifBlank { "document_scan" })
         tvFileInfo.text = "${document.pages.size} Files"
-        toggleFormat.check(com.ujjawal.docscanner.R.id.btnPdf)
+        val defaultExport = AppPrefs.getDefaultExport(this)
+        toggleFormat.check(if (defaultExport == "jpeg") com.ujjawal.docscanner.R.id.btnJpeg else com.ujjawal.docscanner.R.id.btnPdf)
 
         btnEditName.setOnClickListener {
             etFileName.requestFocus()

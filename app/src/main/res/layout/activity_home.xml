@@ -12,29 +12,14 @@
         android:background="@color/surface"
         app:elevation="2dp">
 
-        <LinearLayout
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="16dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Free Scanner"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:textColor="@color/on_surface" />
-
-            <ImageButton
-                android:id="@+id/btnSearch"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_search"
-                android:contentDescription="Search" />
-        </LinearLayout>
+            app:title="Free Scanner"
+            app:titleTextColor="@color/on_surface"
+            app:titleTextAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+            app:menu="@menu/menu_home" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <!-- Content -->

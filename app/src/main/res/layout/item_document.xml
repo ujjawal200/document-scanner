@@ -47,5 +47,11 @@
                 android:textSize="12sp"
                 android:textColor="#999999" />
         </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/cbSelect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

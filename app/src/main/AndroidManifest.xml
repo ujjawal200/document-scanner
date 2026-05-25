@@ -26,6 +26,7 @@
         <activity android:name=".ui.editor.EditorActivity" />
         <activity android:name=".ui.gallery.GalleryActivity" />
         <activity android:name=".ui.pdf.PdfPreviewActivity" />
+        <activity android:name=".ui.settings.SettingsActivity" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
