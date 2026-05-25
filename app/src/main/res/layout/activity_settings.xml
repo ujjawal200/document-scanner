@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/surface">
+    android:background="@color/surface_variant">
 
     <!-- Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="@color/surface"
-        app:navigationIcon="@drawable/ic_arrow_back"
+        app:navigationIcon="@drawable/ic_arrow_back_dark"
         app:title="Settings"
         app:titleTextColor="@color/on_surface"
         app:elevation="2dp" />

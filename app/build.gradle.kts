@@ -16,7 +16,7 @@ android {
         minSdk = 24
         targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
 
         // Only include ARM libs (most phones). Drops x86/x86_64 = ~50% size reduction
         ndk {
@@ -24,15 +24,24 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("release-keystore.jks")
+            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "FreeScanner2026"
+            keyAlias = "free-scanner"
+            keyPassword = System.getenv("KEY_PASSWORD") ?: "FreeScanner2026"
+        }
+    }
+
     buildTypes {
         debug {
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }

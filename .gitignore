@@ -16,3 +16,6 @@ local.properties
 
 # Firebase
 app/google-services.json
+
+# Release keystore
+app/release-keystore.jks
